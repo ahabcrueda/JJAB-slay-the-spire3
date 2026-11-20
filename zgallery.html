@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>다차원 원정 · 카드와 몬스터 도감</title>
+  <link rel="stylesheet" href="zstyles.css">
+  <style>
+    .gallery-controls{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 22px}.gallery-controls button{padding:8px 12px;border:1px solid #66717a;border-radius:7px;color:#eadfc8;background:#202a33}.gallery-controls button.active{border-color:#d9b878;color:#f8dfaa}.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}.gallery-item{overflow:hidden;border:1px solid #59656b;border-radius:9px;background:#141c25}.gallery-item img{display:block;width:100%;height:125px;object-fit:cover;background:#202630}.gallery-item .meta{padding:8px}.gallery-item b{display:block;color:#f2dfba;font-size:13px}.gallery-item small{color:#aeb4b0;font-size:10px}.gallery-section{margin:24px 0 36px}.gallery-section h2{border-bottom:1px solid #66717a;padding-bottom:10px}.gallery-hidden{display:none!important}
+  </style>
+</head>
+<body><div class="app-shell">
+  <header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">✦</span><span>다차원 원정 · 도감</span></a><a class="small-button" href="index.html">게임으로 돌아가기</a></header>
+  <main id="gallery" class="screen"><div class="eyebrow">ASSET LIBRARY</div><h1>카드와 몬스터 도감</h1><p class="subtitle">게임에 포함된 직업 카드 60장, 무색 카드 10장, 몬스터 80종과 캐릭터 초상화를 확인할 수 있다.</p><div class="gallery-controls" id="filters"><button class="active" data-filter="all">전체</button><button data-filter="cards">카드</button><button data-filter="enemies">몬스터</button><button data-filter="characters">캐릭터</button><button data-filter="relics">유물</button></div><div id="gallery-content"></div></main>
+  <footer class="footer">MULTIDIMENSION EXPEDITION · ASSET GALLERY</footer>
+</div>
+<script src="zdata.js"></script><script src="zrelics-events.js"></script><script>
+const D=window.GAME_DATA, root=document.getElementById('gallery-content');
+const html=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function section(title,kind,items){return `<section class="gallery-section" data-kind="${kind}"><h2>${title} <small>(${items.length})</small></h2><div class="gallery-grid">${items.map(x=>`<article class="gallery-item"><img loading="lazy" src="${x.image}" alt="${html(x.name)}"><div class="meta"><b>${html(x.name)}</b><small>${html(x.detail||'')}</small></div></article>`).join('')}</div></section>`;}
+const charItems=Object.values(D.characters).map(x=>({name:x.name,image:x.image,detail:`체력 ${x.hp} · 골드 ${x.gold}`}));
+const cardItems=Object.values(D.cards).filter(x=>x.owner!=='starter').map(x=>({name:x.name,image:x.art,detail:`${x.owner==='colorless'?'무색':D.characters[x.owner].name} · ${x.cost}코스트 · ${x.type}`}));
+const enemyItems=D.allMonsters.map(x=>({name:x.name,image:x.art,detail:`${x.kind==='normal'?'일반':x.kind==='elite'?'엘리트':'보스'} · ${x.act===0?'전 장 공통':`${x.act}장`} · 체력 ${x.hp}`}));
+const relicItems=D.relics.map(x=>({name:x.name,image:x.icon,detail:`${({common:'일반',uncommon:'고급',rare:'희귀',boss:'보스'})[x.rarity]} · ${x.desc}`}));
+root.innerHTML=section('캐릭터','characters',charItems)+section('카드','cards',cardItems)+section('몬스터','enemies',enemyItems)+section('유물','relics',relicItems);
+document.getElementById('filters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;document.querySelectorAll('#filters button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.gallery-section').forEach(s=>s.classList.toggle('gallery-hidden',b.dataset.filter!=='all'&&s.dataset.kind!==b.dataset.filter));});
+</script></body></html>
